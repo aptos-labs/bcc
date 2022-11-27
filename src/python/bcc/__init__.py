@@ -1590,6 +1590,9 @@ class BPF(object):
             "start_thread"
         """
 
+        if pid > 0:
+            pid = 1
+
         #addr is of type stacktrace_build_id
         #so invoke the bsym address resolver
         typeofaddr = str(type(addr))
@@ -1615,7 +1618,7 @@ class BPF(object):
           name, offset, module = BPF._sym_cache(pid).resolve(addr, demangle)
 
         offset = b"+0x%x" % offset if show_offset and name is not None else b""
-        name = name or b"[unknown]"
+        name = name or b"[unknown(0x%x)]" % addr
         name = name + offset
         module = b" [%s]" % os.path.basename(module) \
             if show_module and module is not None else b""
