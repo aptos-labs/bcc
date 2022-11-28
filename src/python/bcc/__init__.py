@@ -30,6 +30,7 @@ from .utils import get_online_cpus, printb, _assert_is_bytes, ArgString, StrcmpR
 from .version import __version__
 from .disassembler import disassemble_prog, decode_map
 from .usdt import USDT, USDTException
+from rust_demangler import demangle as demangler
 
 try:
     basestring
@@ -69,7 +70,7 @@ class SymbolCache(object):
         self.cache = lib.bcc_symcache_new(
                 pid, ct.cast(None, ct.POINTER(bcc_symbol_option)))
 
-    def resolve(self, addr, demangle):
+    def resolve(self, addr, demangle, rust):
         """
         Return a tuple of the symbol (function), its offset from the beginning
         of the function, and the module in which it lies. For example:
@@ -93,6 +94,9 @@ class SymbolCache(object):
             return (None, addr, None)
         if demangle:
             name_res = sym.demangle_name
+            if b'$' in name_res and demangle:
+                name_res = demangler(sym.name.decode('utf-8')).encode()
+
             lib.bcc_symbol_free_demangle_name(ct.byref(sym))
         else:
             name_res = sym.name
@@ -1590,8 +1594,10 @@ class BPF(object):
             "start_thread"
         """
 
+        rust = False
         if pid > 0:
             pid = 1
+            rust = True
 
         #addr is of type stacktrace_build_id
         #so invoke the bsym address resolver
@@ -1615,7 +1621,7 @@ class BPF(object):
             name, offset, module = (sym.name, sym.offset,
                                     ct.cast(sym.module, ct.c_char_p).value)
         else:
-          name, offset, module = BPF._sym_cache(pid).resolve(addr, demangle)
+          name, offset, module = BPF._sym_cache(pid).resolve(addr, demangle, rust)
 
         offset = b"+0x%x" % offset if show_offset and name is not None else b""
         name = name or b"[unknown(0x%x)]" % addr

@@ -13,6 +13,7 @@ class TypeNotFoundError(Exception):
 class RustDemangler(object):
     LEGACYTYPE = 0
     V0TYPE = 1
+    NOMANGLE = 2
 
     def __init__(self):
         self.legacy = LegacyDemangler()
@@ -24,7 +25,10 @@ class RustDemangler(object):
         Args:
             inpstr (str): String to be demangled
         """
+
         curr_type = self.determine_type(inpstr)
+        if curr_type == self.NOMANGLE:
+            return inpstr
         if curr_type == self.LEGACYTYPE:
             return self.legacy.demangle(inpstr)
         else:
@@ -48,4 +52,4 @@ class RustDemangler(object):
         elif inpstr.startswith("_R") or inpstr.startswith("R") or inpstr.startswith("__R"):
             return self.V0TYPE
         else:
-            raise TypeNotFoundError(inpstr)
+            return self.NOMANGLE

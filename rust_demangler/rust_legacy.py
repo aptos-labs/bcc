@@ -16,7 +16,8 @@ class LegacyDemangler(object):
 
         disp = ""
         inpstr = inpstr[inpstr.index("N") + 1:]
-        self.sanity_check(inpstr)
+        if not self.sanity_check(inpstr):
+            return inpstr
 
         if ".llvm." in inpstr:
             l = inpstr.find(".llvm.")
@@ -145,7 +146,9 @@ class LegacyDemangler(object):
     def sanity_check(self, inpstr : str):
         for i in inpstr:
             if(ord(i) & 0x80 != 0):
-                raise UnableToLegacyDemangle(inpstr)
+                #raise UnableToLegacyDemangle(inpstr)
+                return False
+            return True
 
         self.elements = 0  
         c = 0
