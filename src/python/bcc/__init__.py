@@ -31,6 +31,7 @@ from .version import __version__
 from .disassembler import disassemble_prog, decode_map
 from .usdt import USDT, USDTException
 from rust_demangler import demangle as demangler
+from perf_serde import resolve as perf_resolve
 
 try:
     basestring
@@ -1623,7 +1624,11 @@ class BPF(object):
         else:
           name, offset, module = BPF._sym_cache(pid).resolve(addr, demangle, rust)
 
+	if name is None and module is not None:
+		name = perf_resolve(os.path.basename(module), addr)
+
         offset = b"+0x%x" % offset if show_offset and name is not None else b""
+
         name = name or b"[unknown(0x%x)]" % addr
         name = name + offset
         module = b" [%s]" % os.path.basename(module) \

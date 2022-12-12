@@ -325,6 +325,49 @@ void map__fixup_end(struct map *map)
 	}
 }
 
+static void dump_rec_preorder(FILE* f, struct rb_node *nd)
+{
+	struct symbol *sym;
+
+	if (!nd) {
+		fprintf(f, "-\n");
+		return;
+	} else {
+		sym = rb_entry(nd, struct symbol, rb_node);
+		fprintf(f, "%s,%lx,%lx\n", sym->name, sym->start, sym->end);
+	}
+
+	dump_rec_preorder(f, nd->rb_left);
+	dump_rec_preorder(f, nd->rb_right);
+}
+
+static inline void dump_map(struct map *map, const char *name)
+{
+	struct rb_node *nd = map->dso->symbols.rb_root.rb_node;
+	char filename[256];
+	const char *nm = name;
+	int i = 0;
+	FILE *f;
+
+	while (name[i]) {
+		if (name[i] == '[') {
+			return;
+		}
+		if (name[i] == '/')
+			nm = &name[i+1];
+		++i;
+	}
+	snprintf(filename, 256, "/tmp/symbols_%s", nm);
+	f = fopen(filename, "w");
+	if (!f) {
+		pr_err("Failed to open %s\n", filename);
+		return;
+	}
+
+	dump_rec_preorder(f, nd);
+}
+
+
 #define DSO__DELETED "(deleted)"
 
 int map__load(struct map *map)
@@ -364,6 +407,7 @@ int map__load(struct map *map)
 		return -1;
 	}
 
+	dump_map(map, name);
 	return 0;
 }
 

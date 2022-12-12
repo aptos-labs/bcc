@@ -16,6 +16,14 @@ if [[ ! -e /lib/modules/.installed ]]; then
 	mkdir -p "/lib/modules/${KERNEL_VERSION}"
 	ln -sf "${HEADERS}" "/lib/modules/${KERNEL_VERSION}/source"
 	ln -sf "${HEADERS}" "/lib/modules/${KERNEL_VERSION}/build"
+
+	mv /bcc/headers/scripts $HEADERS
+	mv /bcc/headers/tools $HEADERS
+
+	cd ${HEADERS}/tools/perf
+	make &> /dev/null
+	./perf record -g -p 1 -F 99 -- sleep 1
+	./perf report -g --stdio > /dev/null
 	touch /lib/modules/.installed
 fi
 
