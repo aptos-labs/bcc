@@ -24,3 +24,5 @@ if [ ! -d ${DEBUGFS}/tracing ]; then
 	mount -t debugfs none $DEBUGFS
 fi
 echo "BCC setup done"
+
+echo "alias bcc='sudo python3'" >> ~/.bashrc
