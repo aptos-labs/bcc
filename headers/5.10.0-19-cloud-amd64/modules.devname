@@ -1,0 +1,12 @@
+# Device nodes to trigger on-demand module loading.
+autofs4 autofs c10:235
+fuse fuse c10:229
+cuse cuse c10:203
+btrfs btrfs-control c10:234
+nvram nvram c10:144
+loop loop-control c10:237
+tun net/tun c10:200
+dm_mod mapper/control c10:236
+vfio vfio/vfio c10:196
+vhost_net vhost-net c10:238
+vhost_vsock vhost-vsock c10:241

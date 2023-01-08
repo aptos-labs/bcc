@@ -1598,7 +1598,6 @@ class BPF(object):
 
         rust = False
         if pid > 0:
-            pid = 1
             rust = True
 
         #addr is of type stacktrace_build_id
