@@ -30,7 +30,7 @@ from .utils import get_online_cpus, printb, _assert_is_bytes, ArgString, StrcmpR
 from .version import __version__
 from .disassembler import disassemble_prog, decode_map
 from .usdt import USDT, USDTException
-from .rust_demangler import rust_demangle
+from .rust_demangler import rust_demangle, dehash
 
 try:
     basestring
@@ -94,10 +94,11 @@ class SymbolCache(object):
             return (None, addr, None)
         if demangle:
             name_res = sym.demangle_name
-            if b'$' in name_res and demangle:
+            if b'$' in name_res or b'.llvm.' in name_res:
                 name_res = rust_demangle(sym.name.decode('utf-8')).encode()
                 if not name_res:
                     name_res = sym.demangle_name
+            name_res = dehash(name_res.decode('utf-8')).encode()
 
             lib.bcc_symbol_free_demangle_name(ct.byref(sym))
         else:

@@ -32,25 +32,28 @@ def rust_demangle(inpstr: str) -> str:
         s = "\$" + k + "\$"
         inpstr = re.sub(s, unescaped[k], inpstr)
     inpstr = re.sub("\.\.", "::", inpstr)
-    inpstr = re.sub("::h[a-f0-9]{16}\s*$", "", inpstr);
-    inpstr = re.sub("\d{2}h[a-f0-9]{16}E\s*$", "", inpstr);
+    inpstr = re.sub("\d{2}h[a-f0-9]{16}E\s*$", "", inpstr)
 
     ## Replace digit sequences with ::
-    if re.search("\D\d{2,3}\D", inpstr):
+    if re.search("\D\d{1,3}\D", inpstr):
         tmp = inpstr;
         verbose = False
         for mo in re.finditer("(\D)(\d{1,3})(\D)", tmp):
-            if not (re.match("u\d{2}\W", mo.group(0)) or mo.group(3) == '>' or mo.group(2) == '512'):
-                #print(f"{mo.group(0)}")
+            if not (re.match("u\d{2}\W", mo.group(0)) or mo.group(3) in ">)" or mo.group(2) == '512'):
+                #print(f"^^{mo.group(0)} {mo.group(1)} {mo.group(2)} {mo.group(3)}")
                 if mo.group(3) == ":":
                     s = mo.group(1) + "::"
                 else:
                     s = mo.group(1) + "::" + mo.group(3)
+                #print(f"^^{tmp}  ==>> {inpstr}")
                 inpstr = re.sub(mo.group(0), s, inpstr)
-                verbose = True
         #if verbose:
         #    print(f"{tmp}  ==>> {inpstr}")
+    #inpstr = re.sub(">\d+", ">::", inpstr)
 
 
     #print(f"{tmp}  ==>> {inpstr}")
     return inpstr
+
+def dehash(inpstr: str) -> str:
+    return re.sub("::h[a-f0-9]{16}\s*$", "", inpstr)
